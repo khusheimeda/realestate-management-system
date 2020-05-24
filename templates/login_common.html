@@ -1,0 +1,55 @@
+<!DOCTYPE html>
+<html>
+    <head>
+        <title>
+            Login
+        </title>
+        <meta name="viewport" content="width=device-width, initial-scale=1.0">
+        <h1  style = "text-align: center; font-family: Times, serif; font-size: 300%; color:darkred">
+            LOGIN
+        </h1>
+        <style>
+            div {
+                background-color:rgb(228, 218, 233);
+                width: 250px;
+                border: 2px solid black;
+                padding: 50px;
+                margin: auto;
+            }  
+            a:link{
+                color: beige;
+                background-color: transparent;
+                text-decoration: underline;
+            }     
+            a:visited{
+                color:bisque;
+                background-color: transparent;
+                text-decoration: underline;
+            }
+        </style>
+    </head>
+    <body style ="background: url(https://static.careers360.mobi/media/article_images/2017/12/26/pes-university.jpg) ;background-repeat: no-repeat; background-size: cover"><!--style="background: rgb(238, 219, 222)"-->
+        <br><br>
+        <div>
+            <form action="" method="POST">
+                <p style = "text-align: center; font-family: Georgia, 'Times New Roman', Times, serif; font-size: 200%">
+                        <select name="role">
+                                <option value="Client">Client</option>
+                                <option value="Admin">Admin</option>
+                        </select>
+                        <br>
+                     <input type="text" name="id" placeholder="ID" value="{{request.form.id}}"><br>
+                    <input type="submit" value="Next">
+                </p>
+            </form>
+            {% if error %}
+				<p class="error"><strong>Error:</strong> {{ error }}
+			{% endif %}
+        </div>
+        <p title="PES"; style=" font-display: Verdana; color: whitesmoke ; text-align: center">
+            To visit the college website, click on the link below.<br>
+           <a href="https://www.pes.edu/" target="_blank" >PES University</a>
+           <br> <br>
+        </p>
+    </body>
+</html>
