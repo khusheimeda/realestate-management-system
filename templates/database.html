@@ -20,7 +20,7 @@
     <body style="background-color: #eee;">
 
         <nav class="navbar navbar-expand-lg navbar-dark bg-dark">
-           <!-- <a class="navbar-brand" href="{{ url_for("database") }}">Airline</a>
+            <a class="navbar-brand"  >Real Estate</a>
             <button class="navbar-toggler" type="button" data-toggle="collapse" data-target="#navbarSupportedContent" aria-controls="navbarSupportedContent" aria-expanded="false" aria-label="Toggle navigation">
                 <span class="navbar-toggler-icon"></span>
             </button>
@@ -28,21 +28,14 @@
             <div class="collapse navbar-collapse" id="navbarSupportedContent">
                 <ul class="navbar-nav mr-auto">
                     <li class="nav-item">
-                        <a class="nav-link" href="{{ url_for("index") }}">Home</a>
+                        <a class="nav-link" href="{{url_for('home_client')}}">Client Home</a>
                     </li>
                     <li class="nav-item active">
-                        <a class="nav-link" href="{{ url_for("show_public_database") }}">Database <span class="sr-only">(current)</span></a>
-                    </li>
-                    <li class="nav-item">
-                        <a class="nav-link" href="{{ url_for("show_boing") }}">Boeing</a>
+                        <a class="nav-link" href="{{url_for('show_public_database')}}">Database <span class="sr-only">(current)</span></a>
                     </li>
                 </ul>
-            </div>-->
+            </div>
         </nav>
-
-        <div class="container pt-3">
-            <h4>All date and times are in UTC</h4>
-        </div>
 
         {% for tablename, colnames, rows in data %}
         <div class="container pt-3">
@@ -70,11 +63,11 @@
         </div>
         {% endfor %}
 
-        <footer class="footer">
+       <!-- <footer class="footer">
           <div class="container">
             <p class="text-muted">Made by Samyak S Sarnayak (PES1201801565) for Database Management Systems Assignment 3</p>
           </div>
-        </footer>
+        </footer>-->
 
         <!-- Optional JavaScript -->
         <!-- jQuery first, then Popper.js, then Bootstrap JS -->

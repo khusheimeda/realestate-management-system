@@ -23,7 +23,7 @@ def get_conn():
                                 )
     else:
         conn = psycopg2.connect(host="localhost",
-                                database="realestate",
+                                database="realestate1",
                                 user="postgres",
                                 password="root")
     return conn

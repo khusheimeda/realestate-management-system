@@ -6,7 +6,7 @@ import database
 from datetime import datetime
 
 app = Flask(__name__)
-app.config['SQLALCHEMY_DATABASE_URI'] = 'postgresql://postgres:root@localhost/realestate'
+app.config['SQLALCHEMY_DATABASE_URI'] = 'postgresql://postgres:root@localhost/realestate1'
 db = SQLAlchemy(app)
 date_format = "%-I:%M %p, %-d %B %Y"
 
@@ -58,22 +58,17 @@ def show_public_database():
     data[3][2].extend(database.execute_query("SELECT * FROM Land;"))
     data[4][2].extend(database.execute_query("SELECT * FROM House;"))
     data[5][2].extend(database.execute_query("SELECT * FROM Rent;"))
-    # print(data[2][2])
-    # data[2][2] = []
-    # data[2][2] = [datetime.fromisoformat(data[2][2][4]).strftime(date_format)
-    # data[2][2] = datetime.fromisoformat(data[2][2][5]).strftime(date_format)
-    #data[6][2].extend(database.execute_query("SELECT e.eid, e.ename, a.aid, a.aname FROM certified c INNER JOIN employees e ON c.eid = e.eid INNER JOIN aircraft a ON c.aid = a.aid;"))
-    print(data)
+    #print(data)
 
     return render_template("database.html", data=data, enumerate=enumerate, isinstance=isinstance, datetime=datetime, date_format=date_format)
 
 @app.route('/enter/client', methods=['GET', 'POST'])
-def enter_client():
+def home_client():
     '''results = db.session.query(Admin).all()
     for r in results:
         print(r.admin_id, r.admin_password)'''
-    return redirect(url_for(show_public_database))
-    #return render_template("client_view.html")
+    #return redirect(url_for(show_public_database))
+    return render_template("client_view.html")
 
 if __name__ == '__main__':
     app.run(debug=True)
