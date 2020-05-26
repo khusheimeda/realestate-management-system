@@ -43,7 +43,6 @@
                 <caption>{{ tablename }}</caption>
                 <thead>
                     <tr>
-                        <th scope="col">Sl No.</th>
                         {% for colname in colnames %}
                         <th scope="col">{{ colname  }}</th>
                         {% endfor %}
@@ -52,7 +51,6 @@
                 <tbody>
                     {% for index, row in enumerate(rows) %}
                     <tr>
-                        <th scope="row">{{ index }}</th>
                         {% for item in row %}
                         <td>{{ item.strftime(date_format) if isinstance(item, datetime) else item }}</td>
                         {% endfor %}

@@ -1,0 +1,84 @@
+<!doctype html>
+<html lang="en">
+    <head>
+        <!-- Required meta tags -->
+        <meta charset="utf-8">
+        <meta name="viewport" content="width=device-width, initial-scale=1, shrink-to-fit=no">
+
+        <!-- Bootstrap CSS -->
+        <link rel="stylesheet" href="/static/css/bootstrap.min.css" integrity="sha384-Vkoo8x4CGsO3+Hhxv8T/Q5PaXtkKtu6ug5TOeNV6gBiFeWPGFN9MuhOf23Q9Ifjh" crossorigin="anonymous">
+
+        <style>
+            .footer {
+                width: 100%;
+                font-size: small;
+            }
+        </style>
+
+        <title>Sell</title>
+    </head>
+    <body style="background-color: #eee;">
+
+        <nav class="navbar navbar-expand-lg navbar-dark bg-dark">
+            <a class="navbar-brand"  >Real Estate</a>
+            <button class="navbar-toggler" type="button" data-toggle="collapse" data-target="#navbarSupportedContent" aria-controls="navbarSupportedContent" aria-expanded="false" aria-label="Toggle navigation">
+                <span class="navbar-toggler-icon"></span>
+            </button>
+
+            <div class="collapse navbar-collapse" id="navbarSupportedContent">
+                <ul class="navbar-nav mr-auto">
+                    <li class="nav-item">
+                        <a class="nav-link" href="{{url_for('sell')}}">Sell</a>
+                    </li>
+                    <li class="nav-item active">
+                        <a class="nav-link" href="{{url_for('show_public_database') }}">All Database <span class="sr-only">(current)</span></a>
+                    </li>
+                </ul>
+            </div>
+        </nav>
+
+        <div>
+            <form action="" method="POST"><!-- <p style = "text-align: center; font-family: Georgia, 'Times New Roman', Times, serif; font-size: 200%">-->
+                <select name="property_type">
+                    <option value="Land">Land</option>
+                    <option value="House">House</option>
+                    <option value="Rent">Rent</option>
+                </select>
+                Client id: <input type="text" name="owner_id" placeholder="Your client id" value="{{request.form.owner_id}}"><br><br>
+                Details:<br>
+                No: <input type="text" name="plot_no" placeholder="PlotNo or HouseNo or BuildingNo" value="{{request.form.plot_no}}"><br>
+                Street number: <input type="text" name="street_no" placeholder="Street details" value="{{request.form.street_no}}"><br>
+                Locality number: <input type="text" name="locality_name" placeholder="Locality name" value="{{request.form.locality_name}}"><br>
+                City: <input type="text" name="city" placeholder="City" value="{{request.form.city}}"><br>
+                State: <input type="text" name="state" placeholder="State" value="{{request.form.state}}"><br>
+                Pin Code: <input type="text" name="pin_code" placeholder="6 digit pin code" value="{{request.form.pin_code}}"><br>
+                Facing: <input type="text" name="facing" placeholder="North/South/East/West" value="{{request.form.facing}}"><br><br>
+
+                If you chose LAND:<br>
+                Length: <input type="text" name="length" placeholder="Length" value="{{request.form.length}}"><br>
+                Breadth: <input type="text" name="breadth" placeholder="Breadth" value="{{request.form.breadth}}"><br>
+                Total Cost: <input type="text" name="total_cost" placeholder="Total cost in numerals" value="{{request.form.total_cost}}"><br><br>
+
+                If you chose House:<br>
+                BHK: <input type="text" name="bhk" placeholder="number of rooms" value="{{request.form.bhk}}"><br>
+                Parking: <input type="text" name="parking" placeholder="1 for YES, 0 for NO" value="{{request.form.parking}}"><br>
+                Total Cost: <input type="text" name="total_cost_h" placeholder="Total cost in numerals" value="{{request.form.total_cost_h}}"><br><br>
+
+                If you chose Rent:<br>
+                BHK: <input type="text" name="bhk_r" placeholder="number of rooms" value="{{request.form.bhk_r}}"><br>
+                Parking: <input type="text" name="parking_r" placeholder="1 for YES, 0 for NO" value="{{request.form.parking_r}}"><br>
+                Tenant Type: <input type="text" name="tenant_type" placeholder="Family/Bachelor/Corporate" value="{{request.form.tenant_type}}"><br>
+                Monthly rent: <input type="text" name="monthly_rent" placeholder="Monthly rent in numerals" value="{{request.form.monthly_rent}}"><br>
+                Advance amount: <input type="text" name="advance_amount" placeholder="Advance amount in numbers" value="{{request.form.advance_amount}}"><br><br>
+                <input type="submit" value="Add to sell">
+            </p>
+            </form>
+        </div>
+
+        <!-- Optional JavaScript -->
+        <!-- jQuery first, then Popper.js, then Bootstrap JS -->
+        <script src="/static/js/jquery-3.4.1.slim.min.js" integrity="sha384-J6qa4849blE2+poT4WnyKhv5vZF5SrPo0iEjwBvKU7imGFAV0wwj1yYfoRSJoZ+n" crossorigin="anonymous"></script>
+        <script src="/static/js/popper.min.js" integrity="sha384-Q6E9RHvbIyZFJoft+2mJbHaEWldlvI9IOYy5n3zV9zzTtmI3UksdQRVvoxMfooAo" crossorigin="anonymous"></script>
+        <script src="/static/js/bootstrap.min.js" integrity="sha384-wfSDF2E50Y2D1uUdj0O3uMBJnjuUD4Ih7YwaYd1iqfktj0Uod8GCExl3Og8ifwB6" crossorigin="anonymous"></script>
+    </body>
+</html>
