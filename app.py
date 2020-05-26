@@ -1,5 +1,4 @@
-from time import strftime
-from flask import Flask, render_template, request, url_for, redirect
+from flask import Flask, render_template, request, url_for, redirect, flash
 from flask_sqlalchemy import SQLAlchemy
 # from models import db
 from sqlalchemy.ext.automap import automap_base
@@ -8,6 +7,7 @@ from datetime import datetime, date
 
 app = Flask(__name__)
 app.config['SQLALCHEMY_DATABASE_URI'] = 'postgresql://postgres:root@localhost/realestate1'
+#app.secret_key = "khushei"
 db = SQLAlchemy(app)
 date_format = "%-I:%M %p, %-d %B %Y"
 
@@ -161,8 +161,75 @@ def sell():
             database.other_query("INSERT INTO rent values('R" + str(
                 rent_id) + "', '" + plot_no + "', '" + street_no + "', '" + locality_name + "', '" + city + "', '" + state + "', '" + pin_code + "', '" + facing + "', " + bhk + ", '" + parking + "', '" + tenant_type + "', " + monthly_rent + ", " + advance_amount + ")")
 
+        #flash("Property added for sale")
         return redirect(url_for('show_public_database'))
     return render_template("sell.html")
+
+
+@app.route('/update/sell', methods=['GET', 'POST'])
+def update_sell():
+    if request.method == 'POST':
+        property_type = request.form['property_type']
+        property_id = request.form['property_id']
+
+        if property_type == 'Land':
+            total_cost = request.form['total_cost']
+            property_status = request.form['property_status']
+
+            if total_cost != '':
+                results = db.session.query(Land).all()
+                for r in results:
+                    if r.plot_id == property_id:
+                        database.other_query("UPDATE land SET total_cost=" + total_cost + " where plot_id='" + property_id + "'")
+            if property_status != '':
+                results1 = db.session.query(Property).all()
+                for r in results1:
+                    if r.property_id == property_id:
+                        database.other_query("UPDATE property SET property_status='" + property_status + "' where property_id='" + property_id + "'")
+
+        elif property_type == 'House':
+            total_cost = request.form['total_cost_h']
+            property_status = request.form['property_status_h']
+
+            if total_cost != '':
+                results = db.session.query(House).all()
+                for r in results:
+                    if r.house_id == property_id:
+                        if total_cost != '':
+                            database.other_query("UPDATE house SET total_cost=" + total_cost + " where house_id='" + property_id + "'")
+
+            if property_status != '':
+                results1 = db.session.query(Property).all()
+                for r in results1:
+                    if r.property_id == property_id:
+                        database.other_query(
+                            "UPDATE property SET property_status='" + property_status + "' where property_id='" + property_id + "'")
+
+        elif property_type == 'Rent':
+            tenant_type = request.form['tenant_type']
+            monthly_rent = request.form['monthly_rent']
+            advance_amount = request.form['advance_amount']
+            property_status = request.form['property_status_r']
+
+            results = db.session.query(Rent).all()
+            for r in results:
+                if r.rent_id == property_id:
+                    if tenant_type != '':
+                        database.other_query("UPDATE rent SET tenant_type='" + tenant_type + "' where rent_id='" + property_id + "'")
+                    if monthly_rent != '':
+                        database.other_query("UPDATE rent SET monthly_rent=" + monthly_rent + " where rent_id='" + property_id + "'")
+                    if advance_amount != '':
+                        database.other_query("UPDATE rent SET advance_amount=" + advance_amount + " where rent_id='" + property_id + "'")
+            if property_status != '':
+                results1 = db.session.query(Property).all()
+                for r in results1:
+                    if r.property_id == property_id:
+                        database.other_query(
+                            "UPDATE property SET property_status='" + property_status + "' where property_id='" + property_id + "'")
+
+        #flash("Property details updated")
+        return redirect(url_for('show_public_database'))
+    return render_template("update_sell.html")
 
 
 @app.route('/enter/admin', methods=['GET', 'POST'])

@@ -73,6 +73,5 @@ def other_query(query, conn1=conn):
 
 
 if __name__ == "__main__":
-    # conn = get_conn()
     print(execute_query("SELECT version()", conn))
     print(execute_query("SELECT * from admin", conn))
