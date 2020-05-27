@@ -93,8 +93,8 @@ def show_public_database():
 def show_private_database():
     """Returns all data in database"""
     data1 = [("Client_Address", ("Postal Code", "City", "State"), []),
-            ("Client", ("Client_ID", "Name", "Contact_No", "DOB", "Aadhar_No", "Postal_Code"), []),
-            ("Book", ("Book_ID", "Date_Booked", "Property_ID", "Owner_ID", "Buyer_ID"), []),
+             ("Client", ("Client_ID", "Name", "Contact_No", "DOB", "Aadhar_No", "Postal_Code"), []),
+             ("Book", ("Book_ID", "Date_Booked", "Property_ID", "Owner_ID", "Buyer_ID"), []),
              ("Payment", ("Payment_ID", "Transaction_Ref_No", "Payment_Status", "Book_ID", "Client_ID"), []
               )]
     data1[0][2].extend(database.execute_query("SELECT * FROM Client_Address;"))
@@ -243,11 +243,12 @@ def update_sell():
     return render_template("update_sell.html")
 
 
-@app.route('/buy', methods=['GET', 'POST'])
+@app.route('/buy/land', methods=['GET', 'POST'])
 def buy_land():
     data = [("Land view", (
-    "Date_Posted", "Plot_ID", "Plot_No", "Street_No", "Locality_Name", "City", "State", "Pin_Code", "Length", "Breadth",
-    "Facing", "Total_Cost"), [])]
+        "Date_Posted", "Plot_ID", "Plot_No", "Street_No", "Locality_Name", "City", "State", "Pin_Code", "Length",
+        "Breadth",
+        "Facing", "Total_Cost"), [])]
     database.other_query(
         "create view buy_land as select date_posted, Plot_ID, Plot_No, Street_No, Locality_Name, City, State, Pin_Code, Length, Breadth, Facing, Total_Cost from property, land where property_id=plot_id and property_status='Unsold';")
     data[0][2].extend(database.execute_query("SELECT * FROM buy_land;"))
@@ -267,6 +268,29 @@ def buy_land():
                            datetime=datetime, date_format=date_format)
 
 
+@app.route('/buy/house', methods=['GET', 'POST'])
+def buy_house():
+    data = [("House view", (
+        "Date_Posted", "House_ID", "House_No", "Street_No", "Locality_Name", "City", "State", "Pin_Code", "Facing",
+        "BHK", "Parking", "Total_Cost"), [])]
+    database.other_query("create view buy_house as select date_posted, House_ID, House_No, Street_No, Locality_Name, City, State, Pin_Code, Facing, BHK, Parking, Total_Cost from property, house where property_id=house_id and property_status='Unsold';")
+    data[0][2].extend(database.execute_query("SELECT * FROM buy_house;"))
+    database.other_query("drop view buy_house;")
+    if request.method == 'POST':
+        buyer_id = request.form['buyer_id']
+        house_id = request.form['house_id']
+        results = db.session.query(House).all()
+        if buyer_id == id1:
+            for r in results:
+                if r.house_id == house_id:
+                    return redirect(url_for('pay', plot_id=house_id, amt=r.total_cost))
+        else:
+            flash("Please enter correct client id")
+            return redirect(url_for('buy_house'))
+    return render_template("buy_house.html", data=data, enumerate=enumerate, isinstance=isinstance,
+                           datetime=datetime, date_format=date_format)
+
+
 @app.route('/pay/<amt>/for/<plot_id>', methods=['GET', 'POST'])
 def pay(plot_id, amt):
     results = db.session.query(Book).all()
@@ -283,14 +307,17 @@ def pay(plot_id, amt):
                 amount = request.form['amount']
                 if amount == amt and choice == 'Buy':
                     database.other_query(
-                        "INSERT INTO book values('B" + str(book_id) + "', '" + date_booked + "', '" + plot_id + "', '" + owner_id + "', '" + id1 + "')")
+                        "INSERT INTO book values('B" + str(
+                            book_id) + "', '" + date_booked + "', '" + plot_id + "', '" + owner_id + "', '" + id1 + "')")
                     results2 = db.session.query(Payment).all()
                     payment_id = results2[-1].payment_id[3:]
                     payment_id = int(payment_id) + 1
                     transaction_ref_no = int(results2[-1].transaction_ref_no) + 1
                     database.other_query(
-                        "INSERT INTO payment values('PAY" + str(payment_id) + "', " + str(transaction_ref_no) + ", 'Fully paid', 'B" + str(book_id) + "', '" + id1 + "')")
-                    database.other_query("UPDATE property SET property_status='Sold' where property_id='" + plot_id + "'")
+                        "INSERT INTO payment values('PAY" + str(payment_id) + "', " + str(
+                            transaction_ref_no) + ", 'Fully paid', 'B" + str(book_id) + "', '" + id1 + "')")
+                    database.other_query(
+                        "UPDATE property SET property_status='Sold' where property_id='" + plot_id + "'")
                     flash("Congrats! You have purchased the land")
                     return redirect(url_for('show_public_database'))
 
