@@ -1,0 +1,361 @@
+Password for postgres sql is root
+--Make ER diagram, i.e, conceptual data model
+	--Start by listing out entities and relations between them. To do this, you can begin by grouping logically related attributes into a single table(entity mostly).
+	--Then the attributes for each entity and relation.
+	--Note the participlation and cardinality of every relation. So see if M:N or 1:N or N:1 type relation.
+	(Basically come up with all the tables and SQL values that'll go into them.)
+
+Admin(Admin_ID, Admin_Password)
+Client(Client_ID, Name, Contact_No, DOB, City, State, Postal_Code, Aadhar_No, Password)
+Property(Property_ID, Property_Type, Owner_ID, Date_Posted, Status)
+Land(Plot_ID, Plot_No, Street_No, Locality_Name, City, State, Pin_Code, Length, Breadth, Facing, Total_Cost)
+House(House_ID, House_No, Street_No, Locality_Name, City, State, Pin_Code, Facing, BHK, Parking, Total_Cost)
+Rent(Rent_ID, Building_No, Street_No, Locality_Name, City, State, Pin_Code, Facing, BHK, Parking, Tenant_Type, Monthly_Rent, Advance_Amount)
+Book(Book_ID, Date_Booked)
+Payment(Payment_ID, Transaction_Ref_No, Status, Book_ID)
+ 
+
+--Convert ER-diagram to tables
+Payment(Payment_ID, Transaction_Ref_No, Status, Book_ID, Client_ID)	//Client_ID added as foreign key because of 1:N relationship
+Book(Book_ID, Date_Booked, Property_ID, Owner_ID, Buyer_ID)	//Client_ID as Owner_ID and Buyer_ID and Property_ID added, shoul become primary key of this table, because of M:N relationship, but we use Book_ID as primary key
+
+So finally we have,
+Admin(Admin_ID, Admin_Password)
+	Admin_ID is primary key
+Client(Client_ID, Name, Contact_No, DOB, City, State, Postal_Code, Aadhar_No)
+	Client_ID is primary key
+	Contact_No is candidate key
+	Age could be a derived attribute
+Property(Property_ID, Property_Type, Owner_ID, Date_Posted, Status)
+	Property_ID is primary key
+	Owner_ID is a foreign key referring to Client_ID from Client
+Land(Plot_ID, Plot_No, Street_No, Locality_Name, City, State, Pin_Code, Length, Breadth, Facing, Total_Cost)
+	Plot_ID is primary key
+	{Plot_No, Street_No, Locality_Name, City, State, Pin_Code} is candidate key
+	Area could be a derived attribute 
+House(House_ID, House_No, Street_No, Locality_Name, City, State, Pin_Code, Facing, BHK, Parking, Total_Cost)
+	House_ID is primary key
+	{House_No, Street_No, Locality_Name, City, State, Pin_Code} is candidate key
+Rent(Rent_ID, Building_No, Street_No, Locality_Name, City, State, Pin_Code, Facing, BHK, Parking, Tenant_Type, Monthly_Rent, Advance_Amount)
+	Rent_ID is primary key
+	{Building_No, Street_No, Locality_Name, City, State, Pin_Code} is candidate key
+Book(Book_ID, Date_Booked, Property_ID, Owner_ID, Buyer_ID)
+	Book_ID is primary key
+	{Property_ID, Owner_ID, Buyer_ID} is candidate key
+	Property_ID is foreign key referring to Property_ID from Property
+	Owner_ID and Buyer_ID are foreign keys referring to Client_ID from Client
+Payment(Payment_ID, Transaction_Ref_No, Status, Book_ID, Client_ID)	
+	Payment_ID is primary key
+	Transaction_Ref_No is candidate key
+	CLient_ID is a foreign key referring to Client_ID from Client
+	Book_ID is a foreign key referring to Book_ID from Book	
+
+
+--Physical model
+	--Identify the keys based on closure of FDs
+	--Identify Candidate keys and primary keys
+	--Normalization
+
+Admin(Admin_ID, Admin_Password)
+Admin_ID->Admin_Password
+	{Admin_ID}+-> {Admin_ID, Admin_Password}
+	Admin_ID is a key	//based on algorithm 15.2(a)
+	Admin_ID is a candidate key	//based on closure giving all atrributes of relation
+	Admin_Id is the primary key because it is the only candidate key
+1NF, 2NF, 3NF satisfy without any change.
+
+Client(Client_ID, Name, Contact_No, DOB, City, State, Postal_Code, Aadhar_No)
+Client_ID-> Name, Contact_No, DOB, City, State, Postal_Code, Aadhar_No
+	{Client_ID}+-> {Client_ID, Name, Contact_No, DOB, City, State, Postal_Code, Aadhar_No}
+	Client_ID is a key
+	Client_ID is a candidate key
+	Client_ID is chosen as primary key
+Contact_No-> Client_ID, Name, DOB, City, State, Postal_Code, Aadhar_No
+	{Contact_No}+-> {Contact_No, Client_ID, Name, DOB, City, State, Postal_Code, Aadhar_No}
+	Contact_No is a key
+	Contact_No is a candidate key
+Postal_Code-> City, State
+	{Postal_Code}+-> {Postal_Code, City, State}
+1NF, 2NF satisfy without any change.
+Converting to 3NF
+Non prime attributes are Name, DOB, City, State, Postal_Code, Aadhar_No.
+There is a transitive dependency Client_ID-> Postal_Code, Postal_Code-> City, State. It is obvious that a non-key attribute being in the LHS of a FD is problemmatic.
+So we break Client into 
+	-Client(Client_ID, Name, Contact_No, DOB, Aadhar_No, Postal_Code) and 
+		Client_ID is primary key
+		Contact_No is candidate key
+	-Client_Address(Postal_Code, City, State)
+		Postal_Code is primary key	#is it?
+BCNF satisfies without any change.
+
+Property(Property_ID, Property_Type, Owner_ID, Date_Posted, Status)
+Property_ID-> Property_Type, Owner_ID, Date_Posted, Status
+	{Property_ID}+-> {Property_ID, Property_Type, Owner_ID, Date_Posted, Status}
+	Property_ID is a key
+	Property_ID is a candidate key
+	Property_ID is the primary key because it is the only candidate key
+1NF, 2NF, and 3NF satisfy without any change.
+BCNF satisfies without any change.
+
+Land(Plot_ID, Plot_No, Street_No, Locality_Name, City, State, Pin_Code, Length, Breadth, Facing, Total_Cost)
+Plot_ID-> Plot_No, Street_No, Locality_Name, City, State, Pin_Code, Length, Breadth, Facing, Total_Cost
+	{Plot_ID}+-> {Plot_ID, Plot_No, Street_No, Locality_Name, City, State, Pin_Code, Length, Breadth, Facing, Total_Cost}
+	Plot_ID is a key
+	Plot_ID is a candidate key
+	Plot_ID is chosen as primary key
+Pin_Code-> City, State
+	{Pin_Code}+-> {Pin_Code, City, State}
+{Plot_No, Street_No, Locality_Name, Pin_Code}-> Plot_ID, Length, Breadth, Facing, Total_Cost
+	{Plot_No, Street_No, Locality_Name, Pin_Code}+-> {Plot_No, Street_No, Locality_Name, Pin_Code, City, State, Plot_ID, Length, Breadth, Facing, Total_Cost}
+	{Plot_No, Street_No, Locality_Name, Pin_Code} is a candidate key
+1NF, 2NF, 3NF satisfy without any change.
+BCNF satisfies without any change.	
+
+House(House_ID, House_No, Street_No, Locality_Name, City, State, Pin_Code, Facing, BHK, Parking, Total_Cost)
+House_ID-> House_No, Street_No, Locality_Name, City, State, Pin_Code, Facing, BHK, Parking, Total_Cost
+	{House_ID}+-> {House_ID, House_No, Street_No, Locality_Name, City, State, Pin_Code, Facing, BHK, Parking, Total_Cost}	
+	House_ID is a key
+	House_ID is a candidate key
+	House_ID is chosen as primary key
+Pin_Code-> City, State
+	{Pin_Code}+-> {Pin_Code, City, State}
+{House_No, Street_No, Locality_Name, Pin_Code}-> House_ID, Facing, BHK, Parking, Total_Cost
+	{House_No, Street_No, Locality_Name, Pin_Code}+-> {House_No, Street_No, Locality_Name, Pin_Code, City, State, House_ID, Facing, BHK, Parking, Total_Cost}
+	{House_No, Street_No, Locality_Name, Pin_Code} is a candidate key
+1NF, 2NF, 3NF satisfy without any change.
+BCNF satisfies without any change.	
+
+Rent(Rent_ID, Building_No, Street_No, Locality_Name, City, State, Pin_Code, Facing, BHK, Parking, Tenant_Type, Monthly_Rent, Advance_Amount)
+Rent_ID-> Building_No, Street_No, Locality_Name, City, State, Pin_Code, Facing, BHK, Parking, Tenant_Type, Monthly_Rent, Advance_Amount
+	{Rent_ID}+-> {Rent_ID, Building_No, Street_No, Locality_Name, City, State, Pin_Code, Facing, BHK, Parking, Tenant_Type, Monthly_Rent, Advance_Amount}
+	Rent_ID is a key
+	Rent_ID is a candidate key
+	Rent_ID is chosen as primary key
+Pin_Code-> City, State
+	{Pin_Code}+-> {Pin_Code, City, State}
+{Building_No, Street_No, Locality_Name, Pin_Code}-> Rent_ID, Facing, BHK, Parking, Tenant_Type, Monthly_Rent, Advance_Amount
+	{Building_No, Street_No, Locality_Name, Pin_Code}+-> {Building_No, Street_No, Locality_Name, Pin_Code, City, State, Rent_ID, Facing, BHK, Parking, Tenant_Type, Monthly_Rent, Advance_Amount}
+	{Building_No, Street_No, Locality_Name, Pin_Code} is a candidate key
+1NF, 2NF, 3NF satisfy without any change.
+BCNF satisfies without any change.
+
+Book(Book_ID, Date_Booked, Property_ID, Owner_ID, Buyer_ID)
+Book_ID-> Date_Booked, Property_ID, Owner_ID, Buyer_ID 
+	{Book_ID}+-> {Book_ID, Date_Booked, Property_ID, Owner_ID, Buyer_ID}
+	Book_ID is a key
+	Book_ID is a candidate key
+	Book_ID is chosen as primary key
+{Property_ID, Owner_ID, Buyer_ID}-> Book_ID, Date_Booked
+	{Property_ID, Owner_ID, Buyer_ID}+-> {Property_ID, Owner_ID, Buyer_ID, Book_ID, Date_Booked}
+	{Property_ID, Owner_ID, Buyer_ID} is a candidate key
+1NF, 2NF, 3NF satisfy without any change.
+BCNF satisfies without any change.
+
+Payment(Payment_ID, Transaction_Ref_No, Status, Book_ID, Client_ID)
+Payment_ID-> Transaction_Ref_No, Status, Book_ID, Client_ID
+	{Payment_ID}+-> {Payment_ID, Transaction_Ref_No, Status, Book_ID, Client_ID}
+	Payment_ID is a key
+	Payment_ID is a candidate key
+	Payment_ID is chosen as primary key
+Transaction_Ref_No-> Payment_ID, Status, Book_ID, Client_ID
+	{Transaction_Ref_No}+-> {Transaction_Ref_No, Payment_ID, Status, Book_ID, Client_ID}
+	Transaction_Ref_No is a  key
+	Transaction_Ref_No is a candidate key
+1NF, 2NF, 3NF satisfy without any change.
+BCNF satisfies without any change.
+
+
+--Verify lossless join
+	Excel sheet
+
+--Implementation
+Admin
+create table Admin(Admin_ID char(2) NOT NULL PRIMARY KEY, Admin_Password varchar(15) NOT NULL);
+
+#Trigger when number of admins>5
+create function num_admin() returns trigger as $check_admin_no$	
+	declare 
+		num int;
+	begin
+		select count(*) into num from admin;
+		if(num=5) then
+			raise exception 'Invalid number of admins';
+		end if;
+		return NEW;
+	end;
+	$check_admin_no$ LANGUAGE plpgsql;
+create trigger check_admin_no before insert on admin for each row execute procedure num_admin();
+	
+Client_Address
+create table Client_Address(
+Postal_Code char(6) NOT NULL PRIMARY KEY CHECK(LENGTH(Postal_Code)=6) CONSTRAINT valid_postal_code CHECK (Postal_Code ~ '^[0-9]{6}$'), 
+City varchar(20) NOT NULL, 
+State varchar(20) NOT NULL);
+
+Client
+create table Client(
+Client_ID varchar(3) NOT NULL PRIMARY KEY, 
+Name varchar(30) NOT NULL, 
+Contact_No varchar(15) NOT NULL UNIQUE CHECK(LENGTH(Contact_No)=10) CONSTRAINT valid_contact_no CHECK (Contact_No ~ '^[0-9]{10}$'), 
+DOB date NOT NULL, 
+Aadhar_No varchar(12) DEFAULT NULL, 
+Postal_Code char(6) NOT NULL, 
+FOREIGN KEY (Postal_Code) REFERENCES Client_Address(Postal_Code));
+
+#Trigger when DOB >'2002-05-24', ie, age<18 yrs
+create function major_dob() returns trigger as $check_client_dob$
+	begin
+		if(NEW.DOB>'2002-05-24') then
+			raise exception 'Client must be >18yrs of age';
+		end if;
+		return NEW;
+	end;
+	$check_client_dob$ LANGUAGE plpgsql;
+create trigger check_client_dob before insert on client for each row execute procedure major_dob();
+
+#add this constraint only if Aadhar_No is not null - if (Aadhar_No IS NOT NULL) then (CHECK(LENGTH(Aadhar_No)=12) CONSTRAINT valid_aadhar_no CHECK (Aadhar_No ~ '^[0-9]{12}$'))
+create function digits_of_aadhar() returns trigger as $check_valid_aadhar$
+	begin
+		if(NEW.Aadhar_No IS NOT NULL) then
+			if(LENGTH(NEW.Aadhar_No)!=12) then
+				raise exception 'Invalid number of digits in aadhar';
+			end if;
+		end if;
+		return NEW;
+	end;
+	$check_valid_aadhar$ LANGUAGE plpgsql;
+create trigger check_valid_aadhar before insert on client for each row execute procedure digits_of_aadhar();
+
+Property
+create table Property(
+Property_ID varchar(6) NOT NULL PRIMARY KEY, 
+Property_Type varchar(10) NOT NULL, 
+Owner_ID varchar(3) NOT NULL, 
+Date_Posted date NOT NULL, 
+Property_Status varchar(10) NOT NULL, 
+FOREIGN KEY (Owner_ID) REFERENCES Client(Client_ID));
+	#create trigger that if property_id is updated, it should update the same in land, house or rent table, as per the id/Property_type, and vice-versa.
+
+Land
+create table Land(
+Plot_ID varchar(6) NOT NULL PRIMARY KEY, 
+Plot_No varchar(5) NOT NULL, 
+Street_No varchar(10) NOT NULL, 
+Locality_Name varchar(20) NOT NULL, 
+City varchar(20) NOT NULL, 
+State varchar(20) NOT NULL, 
+Pin_Code varchar(6) NOT NULL, 
+Length int NOT NULL, 
+Breadth int NOT NULL, 
+Facing varchar(6) NOT NULL, 
+Total_Cost bigint NOT NULL);
+
+House
+create table House(
+House_ID varchar(6) NOT NULL PRIMARY KEY, 
+House_No varchar(5) NOT NULL, 
+Street_No varchar(10) NOT NULL, 
+Locality_Name varchar(20) NOT NULL, 
+City varchar(20) NOT NULL, 
+State varchar(20) NOT NULL, 
+Pin_Code varchar(6) NOT NULL, 
+Facing varchar(6) NOT NULL, 
+BHK int, 
+Parking bit NOT NULL DEFAULT '0', 
+Total_Cost bigint NOT NULL);
+
+Rent
+create table Rent(
+Rent_ID varchar(6) NOT NULL PRIMARY KEY, 
+Building_No varchar(5) NOT NULL, 
+Street_No varchar(10) NOT NULL, 
+Locality_Name varchar(20) NOT NULL, 
+City varchar(20) NOT NULL, 
+State varchar(20) NOT NULL, 
+Pin_Code varchar(6) NOT NULL, 
+Facing varchar(6) NOT NULL, 
+BHK int, 
+Parking bit NOT NULL DEFAULT '0', 
+Tenant_Type varchar(20), 
+Monthly_Rent bigint NOT NULL, 
+Advance_Amount bigint NOT NULL);
+
+Book
+create table Book(
+Book_ID varchar(5) NOT NULL PRIMARY KEY, 
+Date_Booked date NOT NULL, 
+Property_ID varchar(6) NOT NULL, 
+Owner_ID varchar(3) NOT NULL, 
+Buyer_ID varchar(3) NOT NULL, 
+FOREIGN KEY (Property_ID) REFERENCES Property(Property_ID), 
+FOREIGN KEY (Owner_ID) REFERENCES Client(Client_ID), 
+FOREIGN KEY (Buyer_ID) REFERENCES Client(Client_ID));
+
+#Trigger if date_booked<date_posted
+create function date_of_book() returns trigger as $check_valid_date$
+	begin
+		if(NEW.date_booked<NEW.date_posted) then
+			raise exception 'Date booked cannot be earlier than date posted';
+		end if;
+		return NEW;
+	end;
+	$check_valid_date$ LANGUAGE plpgsql;
+create trigger check_valid_date before insert on client for each row execute procedure date_of_book();
+
+Payment
+create table Payment(
+Payment_ID varchar(7) NOT NULL PRIMARY KEY, 
+Transaction_Ref_No varchar(10) NOT NULL UNIQUE, 
+Payment_Status varchar(15) NOT NULL, 
+Book_ID varchar(5) NOT NULL, 
+Client_ID varchar(3) NOT NULL, 
+FOREIGN KEY (Book_ID) REFERENCES Book(Book_ID) ON UPDATE CASCADE, 
+FOREIGN KEY (Client_ID) REFERENCES Client(Client_ID));
+
+
+--SQL Queries
+1. To get postal code of all areas in Bangalore from Client_Address	
+ select postal_code from (select postal_code,city from client_address where city='Bangalore') as A where A.postal_code = postal_code;
+
+2. #How to compute area from length and breadth in land and display in db?
+
+3. In land table, find the localities where there are more than one plots?
+select locality_name, count(*) from land group by (locality_name) having count(*)>1;
+
+4. Display all unsold lands' plot_no,plot_id and stree_no.
+select plot_id,plot_no,street_no from land,property where (plot_id,property_id,property_type,property_status) in (select plot_id, property_id, property_type, property_status from property, land where property_type='Land' and property_status='Unsold' and plot_id=property_id);
+
+5. Display all unsold/unrented buildings for bachelors.
+select building_no, street_no, locality_name, city, state, pin_code, facing, bhk, parking, monthly_rent, advance_amount from rent,property where (rent_id,property_id,property_type,property_status, tenant_type) in (select rent_id, property_id, property_type, property_status, tenant_type from property, rent where property_type='Rent' and property_status='Unsold' and tenant_type like 'Bache%' and property_id=rent_id);
+
+6. Display all the distinct cities in client_address
+select distinct city from client_address;
+
+7.Illustrate all types of joins using book and payment
+select * from (book join payment on book.book_id = payment.book_id);	//Inner join//The common attribute appears twice in the output//a tuple is included in the result only if a matching tuple exists in the other relation
+select * from (book natural join payment);	//Natural join//like an auto equi join
+select * from (book left outer join payment on book.book_id = payment.book_id);	//Left outer join//The common attribute appears twice in the output//Every column value from left table comes, and if it does not have a corresponding value for any column from the right table, that value is padded with NULL
+select * from (book right outer join payment on book.book_id = payment.book_id);	//Right outer join//The common attribute appears twice in the output//Every column value from right table comes, and if it does not have a corresponding value for any column from the left table, that value is padded with NULL
+select * from (book full join payment on book.book_id = payment.book_id);	//Full outer join//The common attribute appears twice in the output//all attributes of left and right column, whichever value is not present is padded with NULL
+select * from (book natural full join payment);	//Natural full outer join//The common attribute must have the same name, so that it appears only once in the output
+select * from (book natural right outer join payment);	//Natural right join//The common attribute must have the same name, so that it appears only once in the output
+select * from (book natural left outer join payment);	//Natural left join//The common attribute must have the same name, so that it appears only once in the output
+select * from (book cross join payment);	//Cartesian product  
+
+
+--3 Tier Client-server DBMS => There'll be a DB server, a Web/App server(i.e, app's backend) and a GUI/Web interface(i.e, frontend)
+	--=>GUI is the DB interface
+--Constraints
+	--Inherent constraints: Relational model does not allow list as an attribute value
+	--Schema-based constraints: Based on ER model
+		--Key constraint: Primary key values can't be redundant
+		--Entity Integrity constraint: No attribute of primary key can be null
+		--Referential Integrity constraint: Foreign key values should be among the values of the corresponding primary key column, or they can NULL
+		--Domain constraint: every value must be from the domain of its atribute
+	--Semantic Integrity constraint: 
+--Possible violations of constraints when the following operations are performed: Insert, Delete, Update
+
+
+Pointers
+--Views as Authorization Mechanisms to control access between users
+--Preservation of FD in join (not so important)
