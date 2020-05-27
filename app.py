@@ -290,6 +290,26 @@ def buy_house():
     return render_template("buy_house.html", data=data, enumerate=enumerate, isinstance=isinstance,
                            datetime=datetime, date_format=date_format)
 
+@app.route('/rent', methods=['GET', 'POST'])
+def rent():
+    data = [("Rent view", ("Date_Posted", "Rent_ID", "Building_No", "Street_No", "Locality_Name", "City", "State", "Pin_Code", "Facing", "BHK", "Parking", "Tenant_Type", "Monthly_Rent", "Advance_Amount"), [])]
+    database.other_query("create view buy_rent as select date_posted, Rent_ID, Building_No, Street_No, Locality_Name, City, State, Pin_Code, Facing, BHK, Parking, Tenant_Type, Monthly_Rent, Advance_amount from property, rent where property_id=rent_id and property_status='Unsold';")
+    data[0][2].extend(database.execute_query("SELECT * FROM buy_rent;"))
+    database.other_query("drop view buy_rent;")
+    if request.method == 'POST':
+        buyer_id = request.form['buyer_id']
+        rent_id = request.form['rent_id']
+        results = db.session.query(Rent).all()
+        if buyer_id == id1:
+            for r in results:
+                if r.rent_id == rent_id:
+                    return redirect(url_for('pay', plot_id=rent_id, amt=r.advance_amount))
+        else:
+            flash("Please enter correct client id")
+            return redirect(url_for('rent'))
+    return render_template("rent.html", data=data, enumerate=enumerate, isinstance=isinstance,
+                           datetime=datetime, date_format=date_format)
+
 
 @app.route('/pay/<amt>/for/<plot_id>', methods=['GET', 'POST'])
 def pay(plot_id, amt):
