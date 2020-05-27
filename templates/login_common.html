@@ -4,6 +4,15 @@
         <title>
             Login
         </title>
+        {% with messages = get_flashed_messages() %}
+            {% if messages %}
+                <ul class=flashes>
+                {% for message in messages %}
+                    <li>{{ message }}</li>
+                {% endfor %}
+                </ul>
+            {% endif %}
+        {% endwith %}
         <meta name="viewport" content="width=device-width, initial-scale=1.0">
         <h1  style = "text-align: center; font-family: Times, serif; font-size: 300%; color:darkred">
             LOGIN

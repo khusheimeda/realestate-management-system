@@ -3,11 +3,11 @@ from flask_sqlalchemy import SQLAlchemy
 # from models import db
 from sqlalchemy.ext.automap import automap_base
 import database
-from datetime import datetime, date
+from datetime import datetime
 
 app = Flask(__name__)
 app.config['SQLALCHEMY_DATABASE_URI'] = 'postgresql://postgres:root@localhost/realestate1'
-#app.secret_key = "khushei"
+app.secret_key = "khushei"
 db = SQLAlchemy(app)
 date_format = "%-I:%M %p, %-d %B %Y"
 
@@ -20,6 +20,8 @@ Property = Base.classes.property
 Land = Base.classes.land
 House = Base.classes.house
 Rent = Base.classes.rent
+Book = Base.classes.book
+Payment = Base.classes.payment
 
 
 @app.route('/')
@@ -32,6 +34,7 @@ def login():
     if request.method == 'POST':
         role = request.form.get('role')
         print(role)
+        global id1
         id1 = request.form['id']
         if role == 'Admin':
             results = db.session.query(Admin).all()
@@ -53,11 +56,11 @@ def admin_password(id1):
     if request.method == 'POST':
         password = request.form['password']
         print(password)
-        # check with password in database and redirect accordingly
         results = db.session.query(Admin).all()
         for r in results:
             if r.admin_id == id1 and r.admin_password == password:
                 return redirect(url_for('show_private_database'))
+        flash("Incorrect password")
         return redirect(url_for('admin_password', id1=id1))
 
     return render_template("admin_password.html")
@@ -66,9 +69,7 @@ def admin_password(id1):
 @app.route('/show/public/database')
 def show_public_database():
     """Returns all data in database"""
-    data = [("Client_Address", ("Postal Code", "City", "State"), []),
-            ("Client", ("Client_ID", "Name", "Contact_No", "DOB", "Aadhar_No", "Postal_Code"), []),
-            ("Property", ("Property_ID", "Property_Type", "Owner_ID", "Date_Posted", "Property_Status"), []),
+    data = [("Property", ("Property_ID", "Property_Type", "Owner_ID", "Date_Posted", "Property_Status"), []),
             ("Land", (
                 "Plot_ID", "Plot_No", "Street_No", "Locality_Name", "City", "State", "Pin_Code", "Length", "Breadth",
                 "Facing", "Total_Cost"), []),
@@ -79,12 +80,10 @@ def show_public_database():
                 "Rent_ID", "Building_No", "Street_No", "Locality_Name", "City", "State", "Pin_Code", "Facing", "BHK",
                 "Parking", "Tenant_Type", "Monthly_Rent", "Advance_Amount"), []
              )]
-    data[0][2].extend(database.execute_query("SELECT * FROM Client_Address;"))
-    data[1][2].extend(database.execute_query("SELECT * FROM Client;"))
-    data[2][2].extend(database.execute_query("SELECT * FROM Property;"))
-    data[3][2].extend(database.execute_query("SELECT * FROM Land;"))
-    data[4][2].extend(database.execute_query("SELECT * FROM House;"))
-    data[5][2].extend(database.execute_query("SELECT * FROM Rent;"))
+    data[0][2].extend(database.execute_query("SELECT * FROM Property;"))
+    data[1][2].extend(database.execute_query("SELECT * FROM Land;"))
+    data[2][2].extend(database.execute_query("SELECT * FROM House;"))
+    data[3][2].extend(database.execute_query("SELECT * FROM Rent;"))
 
     return render_template("database_public.html", data=data, enumerate=enumerate, isinstance=isinstance,
                            datetime=datetime, date_format=date_format)
@@ -93,11 +92,15 @@ def show_public_database():
 @app.route("/show/private/database")
 def show_private_database():
     """Returns all data in database"""
-    data1 = [("Book", ("Book_ID", "Date_Booked", "Property_ID", "Owner_ID", "Buyer_ID"), []),
+    data1 = [("Client_Address", ("Postal Code", "City", "State"), []),
+            ("Client", ("Client_ID", "Name", "Contact_No", "DOB", "Aadhar_No", "Postal_Code"), []),
+            ("Book", ("Book_ID", "Date_Booked", "Property_ID", "Owner_ID", "Buyer_ID"), []),
              ("Payment", ("Payment_ID", "Transaction_Ref_No", "Payment_Status", "Book_ID", "Client_ID"), []
               )]
-    data1[0][2].extend(database.execute_query("SELECT * FROM Book;"))
-    data1[1][2].extend(database.execute_query("SELECT * FROM Payment;"))
+    data1[0][2].extend(database.execute_query("SELECT * FROM Client_Address;"))
+    data1[1][2].extend(database.execute_query("SELECT * FROM Client;"))
+    data1[2][2].extend(database.execute_query("SELECT * FROM Book;"))
+    data1[3][2].extend(database.execute_query("SELECT * FROM Payment;"))
     print(data1)
 
     return render_template("database_private.html", data=data1, enumerate=enumerate, isinstance=isinstance,
@@ -119,8 +122,10 @@ def sell():
 
         date_posted = datetime.today()
         date_posted = date_posted.strftime("%Y") + '/' + date_posted.strftime("%m") + '/' + date_posted.strftime("%d")
-        # property_id = int(db.session.query(Property).order_by(Property.property_id.desc()).first()[1:])+1
-        # property = [("Property", ("Property_ID", "Property_Type", "Owner_ID", "Date_Posted", "Property_Status"))]
+
+        if owner_id != id1:
+            flash("Incorrect client id")
+            return redirect(url_for('sell'))
 
         if property_type == 'Land':
             length = request.form['length']
@@ -161,7 +166,7 @@ def sell():
             database.other_query("INSERT INTO rent values('R" + str(
                 rent_id) + "', '" + plot_no + "', '" + street_no + "', '" + locality_name + "', '" + city + "', '" + state + "', '" + pin_code + "', '" + facing + "', " + bhk + ", '" + parking + "', '" + tenant_type + "', " + monthly_rent + ", " + advance_amount + ")")
 
-        #flash("Property added for sale")
+        flash("Property added for sale")
         return redirect(url_for('show_public_database'))
     return render_template("sell.html")
 
@@ -180,12 +185,14 @@ def update_sell():
                 results = db.session.query(Land).all()
                 for r in results:
                     if r.plot_id == property_id:
-                        database.other_query("UPDATE land SET total_cost=" + total_cost + " where plot_id='" + property_id + "'")
+                        database.other_query(
+                            "UPDATE land SET total_cost=" + total_cost + " where plot_id='" + property_id + "'")
             if property_status != '':
                 results1 = db.session.query(Property).all()
                 for r in results1:
                     if r.property_id == property_id:
-                        database.other_query("UPDATE property SET property_status='" + property_status + "' where property_id='" + property_id + "'")
+                        database.other_query(
+                            "UPDATE property SET property_status='" + property_status + "' where property_id='" + property_id + "'")
 
         elif property_type == 'House':
             total_cost = request.form['total_cost_h']
@@ -196,7 +203,8 @@ def update_sell():
                 for r in results:
                     if r.house_id == property_id:
                         if total_cost != '':
-                            database.other_query("UPDATE house SET total_cost=" + total_cost + " where house_id='" + property_id + "'")
+                            database.other_query(
+                                "UPDATE house SET total_cost=" + total_cost + " where house_id='" + property_id + "'")
 
             if property_status != '':
                 results1 = db.session.query(Property).all()
@@ -215,11 +223,14 @@ def update_sell():
             for r in results:
                 if r.rent_id == property_id:
                     if tenant_type != '':
-                        database.other_query("UPDATE rent SET tenant_type='" + tenant_type + "' where rent_id='" + property_id + "'")
+                        database.other_query(
+                            "UPDATE rent SET tenant_type='" + tenant_type + "' where rent_id='" + property_id + "'")
                     if monthly_rent != '':
-                        database.other_query("UPDATE rent SET monthly_rent=" + monthly_rent + " where rent_id='" + property_id + "'")
+                        database.other_query(
+                            "UPDATE rent SET monthly_rent=" + monthly_rent + " where rent_id='" + property_id + "'")
                     if advance_amount != '':
-                        database.other_query("UPDATE rent SET advance_amount=" + advance_amount + " where rent_id='" + property_id + "'")
+                        database.other_query(
+                            "UPDATE rent SET advance_amount=" + advance_amount + " where rent_id='" + property_id + "'")
             if property_status != '':
                 results1 = db.session.query(Property).all()
                 for r in results1:
@@ -227,9 +238,83 @@ def update_sell():
                         database.other_query(
                             "UPDATE property SET property_status='" + property_status + "' where property_id='" + property_id + "'")
 
-        #flash("Property details updated")
+        flash("Property details updated")
         return redirect(url_for('show_public_database'))
     return render_template("update_sell.html")
+
+
+@app.route('/buy', methods=['GET', 'POST'])
+def buy_land():
+    data = [("Land view", (
+    "Date_Posted", "Plot_ID", "Plot_No", "Street_No", "Locality_Name", "City", "State", "Pin_Code", "Length", "Breadth",
+    "Facing", "Total_Cost"), [])]
+    database.other_query(
+        "create view buy_land as select date_posted, Plot_ID, Plot_No, Street_No, Locality_Name, City, State, Pin_Code, Length, Breadth, Facing, Total_Cost from property, land where property_id=plot_id and property_status='Unsold';")
+    data[0][2].extend(database.execute_query("SELECT * FROM buy_land;"))
+    database.other_query("drop view buy_land;")
+    if request.method == 'POST':
+        buyer_id = request.form['buyer_id']
+        plot_id = request.form['plot_id']
+        results = db.session.query(Land).all()
+        if buyer_id == id1:
+            for r in results:
+                if r.plot_id == plot_id:
+                    return redirect(url_for('pay', plot_id=plot_id, amt=r.total_cost))
+        else:
+            flash("Please enter correct client id")
+            return redirect(url_for('buy_land'))
+    return render_template("buy_land.html", data=data, enumerate=enumerate, isinstance=isinstance,
+                           datetime=datetime, date_format=date_format)
+
+
+@app.route('/pay/<amt>/for/<plot_id>', methods=['GET', 'POST'])
+def pay(plot_id, amt):
+    results = db.session.query(Book).all()
+    book_id = results[-1].book_id[1:]
+    book_id = int(book_id) + 1
+    date_booked = datetime.today()
+    date_booked = date_booked.strftime("%Y") + '/' + date_booked.strftime("%m") + '/' + date_booked.strftime("%d")
+    results1 = db.session.query(Property).all()
+    for r in results1:
+        if r.property_id == plot_id:
+            owner_id = r.owner_id
+            if request.method == 'POST':
+                choice = request.form.get('choice')
+                amount = request.form['amount']
+                if amount == amt and choice == 'Buy':
+                    database.other_query(
+                        "INSERT INTO book values('B" + str(book_id) + "', '" + date_booked + "', '" + plot_id + "', '" + owner_id + "', '" + id1 + "')")
+                    results2 = db.session.query(Payment).all()
+                    payment_id = results2[-1].payment_id[3:]
+                    payment_id = int(payment_id) + 1
+                    transaction_ref_no = int(results2[-1].transaction_ref_no) + 1
+                    database.other_query(
+                        "INSERT INTO payment values('PAY" + str(payment_id) + "', " + str(transaction_ref_no) + ", 'Fully paid', 'B" + str(book_id) + "', '" + id1 + "')")
+                    database.other_query("UPDATE property SET property_status='Sold' where property_id='" + plot_id + "'")
+                    flash("Congrats! You have purchased the land")
+                    return redirect(url_for('show_public_database'))
+
+                elif amount == '100' and choice == 'Book':
+                    database.other_query(
+                        "INSERT INTO book values('B" + str(
+                            book_id) + "', '" + date_booked + "', '" + plot_id + "', '" + owner_id + "', '" + id1 + "')")
+                    results2 = db.session.query(Payment).all()
+                    payment_id = results2[-1].payment_id[3:]
+                    payment_id = int(payment_id) + 1
+                    transaction_ref_no = int(results2[-1].transaction_ref_no) + 1
+                    database.other_query(
+                        "INSERT INTO payment values('PAY" + str(payment_id) + "', " + str(
+                            transaction_ref_no) + ", 'Partially paid', 'B" + str(book_id) + "', '" + id1 + "')")
+                    database.other_query(
+                        "UPDATE property SET property_status='Booked' where property_id='" + plot_id + "'")
+                    flash("Booked")
+                    return redirect(url_for('show_public_database'))
+
+                else:
+                    flash("Either you have entered incorrect amount, or chosen invalid choice")
+                    return redirect(url_for('pay', plot_id=plot_id, amt=amt))
+
+    return render_template("pay.html")
 
 
 @app.route('/enter/admin', methods=['GET', 'POST'])

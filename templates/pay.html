@@ -15,7 +15,16 @@
             }
         </style>
 
-        <title>Database Access | Real Estate Database</title>
+        <title>Sell</title>
+        {% with messages = get_flashed_messages() %}
+            {% if messages %}
+                <ul class=flashes>
+                {% for message in messages %}
+                    <li>{{ message }}</li>
+                {% endfor %}
+                </ul>
+            {% endif %}
+        {% endwith %}
     </head>
     <body style="background-color: #eee;">
 
@@ -28,39 +37,37 @@
             <div class="collapse navbar-collapse" id="navbarSupportedContent">
                 <ul class="navbar-nav mr-auto">
                     <li class="nav-item">
-                        <a class="nav-link" href="{{url_for('home_admin')}}">Admin Home</a>
+                        <a class="nav-link" href="{{url_for('sell')}}">Sell</a>
+                    </li>
+                    <li class="nav-item">
+                        <a class="nav-link" href="{{url_for('update_sell')}}">Update</a>
+                    </li>
+                    <li class="nav-item">
+                        <a class="nav-link" href="{{url_for('buy_land')}}">Buy Land</a>
                     </li>
                     <li class="nav-item active">
-                        <a class="nav-link" href="{{url_for('show_private_database')}}">Database <span class="sr-only">(current)</span></a>
+                        <a class="nav-link" href="{{url_for('show_public_database') }}">All Database <span class="sr-only">(current)</span></a>
                     </li>
                 </ul>
             </div>
         </nav>
 
-        {% for tablename, colnames, rows in data %}
-        <div class="container pt-3">
-            <table class="table table-striped table-bordered table-hover table-responsive-sm">
-                <caption>{{ tablename }}</caption>
-                <thead>
-                    <tr>
-                        {% for colname in colnames %}
-                        <th scope="col">{{ colname  }}</th>
-                        {% endfor %}
-                    </tr>
-                </thead>
-                <tbody>
-                    {% for index, row in enumerate(rows) %}
-                    <tr>
-                        {% for item in row %}
-                        <td>{{ item.strftime(date_format) if isinstance(item, datetime) else item }}</td>
-                        {% endfor %}
-                    </tr>
-                    {% endfor %}
-                </tbody>
-            </table>
+        <div>
+            <form action="" method="POST"><p style = "font-family: Georgia, 'Times New Roman', Times, serif;">
+                Choose property type: <select name="choice">
+                    <option value="Book">Book (Token advance)</option>
+                    <option value="Buy">Buy (Full payment)</option>
+                </select><br><br>
+                Pay Rs100 as token advance for booking.<br>
+                Pay full amount otherwise.<br>
+                Amount: <input type="text" name="amount" placeholder="Amount in numerals" value="{{request.form.amount}}"><br><br>
+                <input type="submit" value="Pay">
+            </p>
+            </form>
         </div>
-        {% endfor %}
 
+        <!-- Optional JavaScript -->
+        <!-- jQuery first, then Popper.js, then Bootstrap JS -->
         <script src="/static/js/jquery-3.4.1.slim.min.js" integrity="sha384-J6qa4849blE2+poT4WnyKhv5vZF5SrPo0iEjwBvKU7imGFAV0wwj1yYfoRSJoZ+n" crossorigin="anonymous"></script>
         <script src="/static/js/popper.min.js" integrity="sha384-Q6E9RHvbIyZFJoft+2mJbHaEWldlvI9IOYy5n3zV9zzTtmI3UksdQRVvoxMfooAo" crossorigin="anonymous"></script>
         <script src="/static/js/bootstrap.min.js" integrity="sha384-wfSDF2E50Y2D1uUdj0O3uMBJnjuUD4Ih7YwaYd1iqfktj0Uod8GCExl3Og8ifwB6" crossorigin="anonymous"></script>
