@@ -1,4 +1,4 @@
-Password for postgres sql is root
+
 --Make ER diagram, i.e, conceptual data model
 	--Start by listing out entities and relations between them. To do this, you can begin by grouping logically related attributes into a single table(entity mostly).
 	--Then the attributes for each entity and relation.
@@ -355,7 +355,3 @@ select * from (book cross join payment);	//Cartesian product
 	--Semantic Integrity constraint: 
 --Possible violations of constraints when the following operations are performed: Insert, Delete, Update
 
-
-Pointers
---Views as Authorization Mechanisms to control access between users
---Preservation of FD in join (not so important)

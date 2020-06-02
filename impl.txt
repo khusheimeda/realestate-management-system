@@ -4,12 +4,8 @@ create database RealEstate;
 CREATE TABLES:
 create table Admin(Admin_ID char(2) NOT NULL PRIMARY KEY, Admin_Password varchar(15) NOT NULL);
 
-create table Client_Address(Postal_Code char(6) NOT NULL PRIMARY KEY CHECK(DATALENGTH(Postal_Code)=6) CONSTRAINT valid_postal_code CHECK (Postal_Code like '[0-9]*6'), City varchar(20) NOT NULL, State varchar(20) NOT NULL);
-//for postgresql
 create table Client_Address(Postal_Code char(6) NOT NULL PRIMARY KEY CHECK(LENGTH(Postal_Code)=6) CONSTRAINT valid_postal_code CHECK (Postal_Code ~ '^[0-9]{6}$'), City varchar(20) NOT NULL, State varchar(20) NOT NULL);
 
-create table Client(Client_ID varchar(3) NOT NULL PRIMARY KEY, Name varchar(30) NOT NULL, Contact_No varchar(15) NOT NULL UNIQUE CHECK(DATALENGTH(Contact_No)=10) CONSTRAINT valid_contact_no CHECK (Contact_No like '[0-9]*10'), DOB date NOT NULL, Aadhar_No varchar(12) DEFAULT NULL, Postal_Code char(6) NOT NULL, FOREIGN KEY (Postal_Code) REFERENCES Client_Address(Postal_Code));
-//for postgresql
 create table Client(Client_ID varchar(3) NOT NULL PRIMARY KEY, Name varchar(30) NOT NULL, Contact_No varchar(15) NOT NULL UNIQUE CHECK(LENGTH(Contact_No)=10) CONSTRAINT valid_contact_no CHECK (Contact_No ~ '^[0-9]{10}$'), DOB date NOT NULL, Aadhar_No varchar(12) DEFAULT NULL, Postal_Code char(6) NOT NULL, FOREIGN KEY (Postal_Code) REFERENCES Client_Address(Postal_Code));
 
 create table Property(Property_ID varchar(6) NOT NULL PRIMARY KEY, Property_Type varchar(10) NOT NULL, Owner_ID varchar(3) NOT NULL, Date_Posted date NOT NULL, Property_Status varchar(10) NOT NULL, FOREIGN KEY (Owner_ID) REFERENCES Client(Client_ID));
