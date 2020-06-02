@@ -1,6 +1,5 @@
 from flask import Flask, render_template, request, url_for, redirect, flash
 from flask_sqlalchemy import SQLAlchemy
-# from models import db
 from sqlalchemy.ext.automap import automap_base
 import database
 from datetime import datetime
